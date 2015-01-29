@@ -10,6 +10,7 @@
 #include <vector> 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <html/ParserDom.h> 
 #include <curl/curl.h>
 #include "spider.h" 
@@ -129,7 +130,7 @@ vector<vector<string> > spider::parse_html_table(tree<HTML::Node> & dom,  tree<H
 /*
 Parse the content crawled by crawl() function and store the parsed values in a two-dimensional vector 
 */
-bool spider::parse(){
+vector<vector<string> > spider::parse(){
 	HTML::ParserDom parser; 
 	tree<HTML::Node> dom = parser.parseTree(html_doc); 	
 	tree<HTML::Node>::iterator it = dom.begin(); 
@@ -140,6 +141,57 @@ bool spider::parse(){
 			break;
 		}
 	}
-	return table.size() > 0; 
+	return table ; 
 }
 
+//convert a date format like "month-day hour:minute" into mysql date format 
+string convert_date(string date){
+	return date;
+}
+
+//input is the type string of IBO 
+string get_tenor(string type){
+	if(type.size() < 2){
+		ERROR("In get_tenor: Wrong IBO type");
+		return "";
+	}
+	if(boost::iends_with(type,"01") 
+		|| boost::iends_with(type,"07")
+		|| boost::iends_with(type,"14")
+		|| boost::iends_with(type,"21")){
+		string  tenors[] = {"O/N","1W","2W","3W"};
+		int idx = boost::lexical_cast<int>(type.substr(type.size()-2,2))/7;
+		if(idx > 3){
+			ERROR("Invalid index");
+			return "";	
+		}
+		return tenors[idx];
+	}else{
+		return type.substr(type.size()-2,2);
+	}	
+}
+
+bool spider::write_db(const vector<vector<string> > & data){
+	if(data.size() <= 2){
+		ERROR("In write_db: HTML table size is to small!!");
+		return false;
+	}
+	//last update time
+	string date = convert_date(data[0][1]);
+	string source = "cfets";
+	string ccy = "CNY";
+	//iterate through each row in data
+	for(size_t i = 2; i < data.size(); i++){
+		const vector<string> & row = data[i]; 
+		string tenor = get_tenor(row[0]); 
+		string ask_rate = row[1];
+		string bid_rate = row[1];
+		write_db(ccy,tenor,ask_rate,bid_rate,date,source);
+	}	
+	return true;
+}
+
+bool spider::write_db(string &ccy, string &tenor, string &ask_rate, string &bid_rate, string &date, string &source){
+	cout << ccy << " " << tenor << " " << ask_rate << " " << bid_rate << " " << date << " " << source << endl;	
+	return true;
+}

@@ -17,8 +17,8 @@ class spider{
 public:
 	spider(std::string); 
 	bool crawl(); 
-	bool parse(); 
-	bool write_db();			
+	std::vector<std::vector<std::string> > parse(); 
+	bool write_db(const std::vector<std::vector<std::string> > & data);			
 
 private: 
 
@@ -31,6 +31,9 @@ private:
 	//this is a callback function used by curl to receive web page data
 	static size_t write_html(void * buffer, size_t size,size_t blocks, std::string * html_p);
 		
+	//actual database write 
+	bool write_db(std::string &ccy, std::string &tenor, std::string &ask_rate, std::string &bid_rate, std::string &date, std::string &source);
+
 private:
 	std::string url; 
 	std::string db_name; 
