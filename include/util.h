@@ -11,4 +11,9 @@
 void DEBUG(const std::string &info);
 void ERROR(const std::string &info);
 
+struct DateTime{
+	std::string date; 
+	std::string time;
+};
+
 #endif 

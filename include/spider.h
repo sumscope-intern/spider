@@ -11,6 +11,7 @@
 #include <string> 
 #include <vector> 
 #include "html/ParserDom.h"
+#include "util.h"
 
 
 class spider{
@@ -32,7 +33,7 @@ private:
 	static size_t write_html(void * buffer, size_t size,size_t blocks, std::string * html_p);
 		
 	//actual database write 
-	bool write_db(std::string &ccy, std::string &tenor, std::string &ask_rate, std::string &bid_rate, std::string &date, std::string &source);
+	bool write_db(std::string &ccy, std::string &tenor, std::string &ask_rate, std::string &bid_rate, DateTime &date_time, std::string &source);
 
 private:
 	std::string url; 
